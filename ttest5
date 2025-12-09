@@ -1,0 +1,161 @@
+-- ===========================================
+-- SIMPLE TOGGLE BUTTON FOR ADMIN PANEL
+-- Made by Siva
+-- Place in executor and execute
+-- ===========================================
+
+-- Get CoreGui
+local CoreGui = game:GetService("CoreGui")
+
+-- Clean up previous toggle if exists
+if CoreGui:FindFirstChild("AdminToggle") then
+    CoreGui:FindFirstChild("AdminToggle"):Destroy()
+end
+
+-- Create the ScreenGui for toggle button
+local toggleGui = Instance.new("ScreenGui")
+toggleGui.Name = "AdminToggle"
+toggleGui.Parent = CoreGui
+toggleGui.ResetOnSpawn = false
+
+-- Create toggle button
+local toggleButton = Instance.new("ImageButton")
+toggleButton.Name = "ToggleBtn"
+toggleButton.Size = UDim2.new(0, 70, 0, 70) -- Size
+toggleButton.Position = UDim2.new(1, -80, 1, -80) -- Bottom-right corner
+toggleButton.AnchorPoint = Vector2.new(1, 1)
+toggleButton.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+toggleButton.BackgroundTransparency = 0.3
+
+-- Make it round
+local corner = Instance.new("UICorner")
+corner.CornerRadius = UDim.new(1, 0) -- Perfect circle
+corner.Parent = toggleButton
+
+-- Add your decal image (replace with your image ID)
+toggleButton.Image = "rbxassetid://126199836457411" -- Your decal
+toggleButton.ScaleType = Enum.ScaleType.Fit
+
+-- Add border
+local stroke = Instance.new("UIStroke")
+stroke.Color = Color3.fromRGB(255, 50, 50)
+stroke.Thickness = 3
+stroke.Parent = toggleButton
+
+-- Toggle state
+local isOn = false
+
+-- On/Off images (same image for now, but you can use different ones)
+local imageOn = "rbxassetid://126199836457411" -- Your decal for ON state
+local imageOff = "rbxassetid://126199836457411" -- Same image for OFF (or use different)
+
+-- Function to handle button click
+local function onButtonClicked()
+    isOn = not isOn -- Flip toggle state
+    
+    if isOn then
+        toggleButton.Image = imageOn
+        stroke.Color = Color3.fromRGB(50, 255, 50) -- Green border when ON
+        
+        -- ===========================================
+        -- HERE: Show your admin panel
+        -- ===========================================
+        print("ADMIN PANEL: ON")
+        
+        -- If your admin panel has its own ScreenGui, enable it here:
+        -- Example: if game.CoreGui:FindFirstChild("AdminPanelGUI") then
+        --     game.CoreGui.AdminPanelGUI.Enabled = true
+        -- end
+        
+        -- Notification
+        game:GetService("StarterGui"):SetCore("SendNotification", {
+            Title = "Admin Panel",
+            Text = "ON",
+            Duration = 2,
+            Icon = "rbxassetid://126199836457411"
+        })
+    else
+        toggleButton.Image = imageOff
+        stroke.Color = Color3.fromRGB(255, 50, 50) -- Red border when OFF
+        
+        -- ===========================================
+        -- HERE: Hide your admin panel
+        -- ===========================================
+        print("ADMIN PANEL: OFF")
+        
+        -- If your admin panel has its own ScreenGui, disable it here:
+        -- Example: if game.CoreGui:FindFirstChild("AdminPanelGUI") then
+        --     game.CoreGui.AdminPanelGUI.Enabled = false
+        -- end
+        
+        -- Notification
+        game:GetService("StarterGui"):SetCore("SendNotification", {
+            Title = "Admin Panel",
+            Text = "OFF",
+            Duration = 2,
+            Icon = "rbxassetid://126199836457411"
+        })
+    end
+end
+
+-- Connect click event
+toggleButton.MouseButton1Click:Connect(onButtonClicked)
+
+-- Make it draggable
+local dragging = false
+local dragStart
+local startPos
+
+toggleButton.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 then
+        dragging = true
+        dragStart = input.Position
+        startPos = toggleButton.Position
+    end
+end)
+
+toggleButton.InputEnded:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 then
+        dragging = false
+    end
+end)
+
+UserInputService = game:GetService("UserInputService")
+UserInputService.InputChanged:Connect(function(input)
+    if dragging and input.UserInputType == Enum.UserInputType.MouseMovement then
+        local delta = input.Position - dragStart
+        toggleButton.Position = UDim2.new(
+            startPos.X.Scale,
+            startPos.X.Offset + delta.X,
+            startPos.Y.Scale,
+            startPos.Y.Offset + delta.Y
+        )
+    end
+end)
+
+-- Add hover effects
+toggleButton.MouseEnter:Connect(function()
+    TweenService = game:GetService("TweenService")
+    TweenService:Create(toggleButton, TweenInfo.new(0.2), {Size = UDim2.new(0, 75, 0, 75)}):Play()
+end)
+
+toggleButton.MouseLeave:Connect(function()
+    TweenService = game:GetService("TweenService")
+    TweenService:Create(toggleButton, TweenInfo.new(0.2), {Size = UDim2.new(0, 70, 0, 70)}):Play()
+end)
+
+-- Parent the button
+toggleButton.Parent = toggleGui
+
+-- Success message
+print("===========================================")
+print("Toggle button created successfully!")
+print("• Click the circle in bottom-right to toggle")
+print("• Drag it to move around")
+print("• When ON: Green border")
+print("• When OFF: Red border")
+print("===========================================")
+
+-- Auto-show the admin panel on first load (optional)
+-- Uncomment this if you want panel to show immediately:
+-- onButtonClicked() -- This will turn it ON
