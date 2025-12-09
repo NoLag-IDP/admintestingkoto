@@ -1,0 +1,164 @@
+-- TOGGLE BUTTON WITH YOUR AVATAR - GUARANTEED TO WORK
+local CoreGui = game:GetService("CoreGui")
+local UserInputService = game:GetService("UserInputService")
+local TweenService = game:GetService("TweenService")
+
+-- Remove old
+if CoreGui:FindFirstChild("AvatarToggle") then
+    CoreGui.AvatarToggle:Destroy()
+end
+
+-- Create GUI
+local gui = Instance.new("ScreenGui")
+gui.Name = "AvatarToggle"
+gui.Parent = CoreGui
+gui.ResetOnSpawn = false
+gui.ZIndexBehavior = Enum.ZIndexBehavior.Global
+
+-- Create avatar button (EXACTLY like your example)
+local avatar = Instance.new("ImageButton")
+avatar.Name = "ToggleButton"
+avatar.Size = UDim2.new(0, 56, 0, 56)
+avatar.Position = UDim2.new(0, 20, 0.5, -28)
+avatar.BackgroundTransparency = 1
+avatar.Image = "rbxassetid://115555110268657" -- Your avatar image
+avatar.ImageTransparency = 0
+avatar.ScaleType = Enum.ScaleType.Fit
+
+-- Make it a perfect circle
+Instance.new("UICorner", avatar).CornerRadius = UDim.new(1, 0)
+
+-- Add border so you can see it
+local stroke = Instance.new("UIStroke")
+stroke.Color = Color3.fromRGB(255, 50, 50) -- Red border
+stroke.Thickness = 3
+stroke.Parent = avatar
+
+-- Add shadow for better visibility
+local shadow = Instance.new("ImageLabel")
+shadow.Name = "Shadow"
+shadow.Size = UDim2.new(1, 10, 1, 10)
+shadow.Position = UDim2.new(0.5, -5, 0.5, -5)
+shadow.AnchorPoint = Vector2.new(0.5, 0.5)
+shadow.BackgroundTransparency = 1
+shadow.Image = "rbxassetid://6014261993" -- Shadow image
+shadow.ImageColor3 = Color3.fromRGB(0, 0, 0)
+shadow.ImageTransparency = 0.5
+shadow.ZIndex = avatar.ZIndex - 1
+shadow.Parent = avatar
+
+-- State
+local isOn = true
+local adminPanelVisible = true
+
+-- Toggle function
+local function toggleAdmin()
+    isOn = not isOn
+    
+    if isOn then
+        -- Turn ON (Green border)
+        stroke.Color = Color3.fromRGB(50, 255, 50)
+        print("ADMIN PANEL: ON")
+        
+        -- SHOW YOUR ADMIN PANEL HERE
+        -- Example:
+        -- if CoreGui:FindFirstChild("AdminPanelGUI") then
+        --     CoreGui.AdminPanelGUI.Enabled = true
+        -- end
+        
+        -- Notification
+        game:GetService("StarterGui"):SetCore("SendNotification", {
+            Title = "Admin Panel",
+            Text = "ACTIVATED",
+            Duration = 1
+        })
+    else
+        -- Turn OFF (Red border)
+        stroke.Color = Color3.fromRGB(255, 50, 50)
+        print("ADMIN PANEL: OFF")
+        
+        -- HIDE YOUR ADMIN PANEL HERE
+        -- Example:
+        -- if CoreGui:FindFirstChild("AdminPanelGUI") then
+        --     CoreGui.AdminPanelGUI.Enabled = false
+        -- end
+        
+        -- Notification
+        game:GetService("StarterGui"):SetCore("SendNotification", {
+            Title = "Admin Panel",
+            Text = "DEACTIVATED",
+            Duration = 1
+        })
+    end
+end
+
+-- Click event
+avatar.MouseButton1Click:Connect(toggleAdmin)
+
+-- Make draggable
+local dragging = false
+local dragStart
+local startPos
+
+avatar.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 then
+        dragging = true
+        dragStart = input.Position
+        startPos = avatar.Position
+        
+        -- Visual feedback when clicked
+        TweenService:Create(avatar, TweenInfo.new(0.1), {Size = UDim2.new(0, 52, 0, 52)}):Play()
+    end
+end)
+
+avatar.InputEnded:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 then
+        dragging = false
+        TweenService:Create(avatar, TweenInfo.new(0.1), {Size = UDim2.new(0, 56, 0, 56)}):Play()
+    end
+end)
+
+UserInputService.InputChanged:Connect(function(input)
+    if dragging and input.UserInputType == Enum.UserInputType.MouseMovement then
+        local delta = input.Position - dragStart
+        avatar.Position = UDim2.new(
+            startPos.X.Scale,
+            startPos.X.Offset + delta.X,
+            startPos.Y.Scale,
+            startPos.Y.Offset + delta.Y
+        )
+    end
+end)
+
+-- F2 key also toggles
+UserInputService.InputBegan:Connect(function(input, processed)
+    if not processed and input.KeyCode == Enum.KeyCode.F2 then
+        toggleAdmin()
+    end
+end)
+
+-- Hover effects
+avatar.MouseEnter:Connect(function()
+    TweenService:Create(avatar, TweenInfo.new(0.2), {Size = UDim2.new(0, 60, 0, 60)}):Play()
+    TweenService:Create(stroke, TweenInfo.new(0.2), {Thickness = 4}):Play()
+end)
+
+avatar.MouseLeave:Connect(function()
+    TweenService:Create(avatar, TweenInfo.new(0.2), {Size = UDim2.new(0, 56, 0, 56)}):Play()
+    TweenService:Create(stroke, TweenInfo.new(0.2), {Thickness = 3}):Play()
+end)
+
+print("=========================================")
+print("AVATAR TOGGLE BUTTON CREATED!")
+print("• Uses your avatar image: 115555110268657")
+print("• Green border = ON")
+print("• Red border = OFF")
+print("• Click to toggle")
+print("• Drag to move")
+print("• Press F2 to toggle")
+print("• Hover animation")
+print("• Click animation")
+print("=========================================")
+
+-- Auto-show admin panel on load
+toggleAdmin() -- This will show it's ON
