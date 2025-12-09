@@ -1,0 +1,157 @@
+-- Simple Toggle Button - Made by Siva
+local CoreGui = game:GetService("CoreGui")
+local Players = game:GetService("Players")
+local player = Players.LocalPlayer
+local UserInputService = game:GetService("UserInputService")
+
+-- Clean up previous toggle
+if CoreGui:FindFirstChild("AdminToggle") then
+    CoreGui.AdminToggle:Destroy()
+end
+
+-- Create ScreenGui
+local toggleGui = Instance.new("ScreenGui")
+toggleGui.Name = "AdminToggle"
+toggleGui.Parent = CoreGui
+toggleGui.ResetOnSpawn = false
+toggleGui.ZIndexBehavior = Enum.ZIndexBehavior.Global
+
+-- Create toggle button
+local toggleButton = Instance.new("ImageButton")
+toggleButton.Name = "ToggleBtn"
+toggleButton.Size = UDim2.new(0, 60, 0, 60)
+toggleButton.Position = UDim2.new(0, 20, 0.5, -30)
+toggleButton.BackgroundTransparency = 1
+toggleButton.BorderSizePixel = 0
+
+-- TRY DIFFERENT IMAGE OPTIONS:
+-- Option 1: Use a Roblox default icon (this should definitely work)
+toggleButton.Image = "rbxassetid://13332175649" -- Default gear icon
+
+-- Option 2: Try your decal with different settings
+-- toggleButton.Image = "http://www.roblox.com/asset/?id=126199836457411"
+-- toggleButton.ScaleType = Enum.ScaleType.Stretch
+
+-- Option 3: Use TextButton instead if image doesn't work
+-- local toggleButton = Instance.new("TextButton")
+-- toggleButton.Name = "ToggleBtn"
+-- toggleButton.Size = UDim2.new(0, 60, 0, 60)
+-- toggleButton.Position = UDim2.new(0, 20, 0.5, -30)
+-- toggleButton.BackgroundColor3 = Color3.fromRGB(255, 50, 50)
+-- toggleButton.Text = "TOGGLE"
+-- toggleButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+-- toggleButton.Font = Enum.Font.GothamBold
+
+-- Make it slightly visible for debugging
+toggleButton.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+toggleButton.BackgroundTransparency = 0.7
+toggleButton.ImageTransparency = 0
+
+-- Add a subtle border so we can see it
+local stroke = Instance.new("UIStroke")
+stroke.Color = Color3.fromRGB(255, 255, 255)
+stroke.Thickness = 2
+stroke.Parent = toggleButton
+
+-- Track toggle state
+local isOn = true -- Start with GUI ON
+local adminPanelVisible = true
+
+-- Function to show/hide admin panel
+local function toggleAdminPanel()
+    isOn = not isOn
+    
+    if isOn then
+        -- Show admin panel
+        adminPanelVisible = true
+        toggleButton.BackgroundColor3 = Color3.fromRGB(50, 255, 50) -- Green when ON
+        
+        -- SHOW YOUR ADMIN PANEL HERE
+        -- Example: 
+        -- if CoreGui:FindFirstChild("AdminPanelGUI") then
+        --     CoreGui.AdminPanelGUI.Enabled = true
+        -- end
+        
+        print("Admin Panel: ON")
+    else
+        -- Hide admin panel
+        adminPanelVisible = false
+        toggleButton.BackgroundColor3 = Color3.fromRGB(255, 50, 50) -- Red when OFF
+        
+        -- HIDE YOUR ADMIN PANEL HERE
+        -- Example:
+        -- if CoreGui:FindFirstChild("AdminPanelGUI") then
+        --     CoreGui.AdminPanelGUI.Enabled = false
+        -- end
+        
+        print("Admin Panel: OFF")
+    end
+    
+    -- Show notification
+    game:GetService("StarterGui"):SetCore("SendNotification", {
+        Title = "Admin Panel",
+        Text = isOn and "ACTIVATED" or "DEACTIVATED",
+        Duration = 1,
+        Icon = "rbxasset://textures/ui/GuiImagePlaceholder.png"
+    })
+end
+
+-- Connect click event
+toggleButton.MouseButton1Click:Connect(toggleAdminPanel)
+
+-- Also connect to Activated for touch devices
+toggleButton.Activated:Connect(toggleAdminPanel)
+
+-- Make it draggable
+local dragging = false
+local dragStart
+local startPos
+
+toggleButton.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+        dragging = true
+        dragStart = input.Position
+        startPos = toggleButton.Position
+        
+        -- Visual feedback when starting to drag
+        toggleButton.BackgroundTransparency = 0.5
+    end
+end)
+
+toggleButton.InputEnded:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+        dragging = false
+        toggleButton.BackgroundTransparency = 0.7
+    end
+end)
+
+UserInputService.InputChanged:Connect(function(input)
+    if dragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
+        local delta = input.Position - dragStart
+        toggleButton.Position = UDim2.new(
+            startPos.X.Scale,
+            startPos.X.Offset + delta.X,
+            startPos.Y.Scale,
+            startPos.Y.Offset + delta.Y
+        )
+    end
+end)
+
+-- F2 key also toggles
+UserInputService.InputBegan:Connect(function(input, processed)
+    if not processed and input.KeyCode == Enum.KeyCode.F2 then
+        toggleAdminPanel()
+    end
+end)
+
+-- Parent the button
+toggleButton.Parent = toggleGui
+
+print("========================================")
+print("Toggle Button Created Successfully!")
+print("• Position: Left side, middle of screen")
+print("• Click to toggle ON/OFF")
+print("• Drag to move around")
+print("• Press F2 to toggle")
+print("• Current state: ON (Green)")
+print("========================================")
